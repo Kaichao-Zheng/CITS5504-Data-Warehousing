@@ -25,6 +25,21 @@
 
 <img src="https://s2.loli.net/2025/03/03/d3Dw12vpkCO5BUf.png" alt="image.png" style="zoom:50%;" />
 
+## Recommended Workflow
+
+| Topic and Concept                     | Lecture or Lab              |
+| ------------------------------------- | --------------------------- |
+| Requirements analysis                 | N/A                         |
+| Business processes analysis           | N/A                         |
+| Dataset analysis and ETL              | Week 3 Lab                  |
+| Design dimension table and fact table | Week 2-4 Lectures           |
+| Data warehouse schema                 | Week 2 Lecture              |
+| Hierarchy and Starnet                 | Week 2-3 Lectures           |
+| Cube                                  | Week 3 Lecture              |
+| Business queries                      | N/A                         |
+| Results visualization                 | Week 4-5 Labs               |
+| Association rules mining              | Week 5 Lecture + Week 6 Lab |
+
 ## Details & Analysis
 
 ### Outcome
