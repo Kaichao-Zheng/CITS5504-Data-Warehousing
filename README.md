@@ -33,7 +33,7 @@
 | Business processes analysis           | N/A                         |
 | Dataset analysis and ETL              | Week 3 Lab                  |
 | Design dimension table and fact table | Week 2-4 Lectures           |
-| Data warehouse schema                 | Week 2 Lecture              |
+| Depict data warehouse schema          | Week 2 Lecture              |
 | Hierarchy and Starnet                 | Week 2-3 Lectures           |
 | Cube                                  | Week 3 Lecture              |
 | Business queries                      | N/A                         |
