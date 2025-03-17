@@ -10,7 +10,7 @@
 | 17 Mar - 23 Mar | Week 4    | Dimension Modelling           | Lab 1-3                   |                            |
 | 24 Mar - 30 Mar | Week 5    | Association Rule Mining       | Lab 1-4	**Lab  Demo**  |                            |
 | 31 Mar - 06 Apr | Week 6    | Data Marts and Metadata       | Lab 1-5	**Lab Demo**   |                            |
-| 07 Apr - 13 Apr | Week 7    | **Intro Graph Databases**     | **Project Consultation**  | Due on 11 Apr              |
+| 07 Apr - 13 Apr | Week 7    | **Intro Graph Databases**     | **Consultation**          | Due on 11 Apr              |
 | 14 Apr - 20 Apr | Week 8    | Graph Data Modelling          | Lab 2-1                   |                            |
 | 21 Apr - 27 Apr | **Break** |                               |                           |                            |
 | 28 Apr - 04 May | Week 9    | *Guest Lecture*               | Lab 2-2                   | **Individual Project 20%** |
@@ -27,7 +27,7 @@
 
 ## Recommended Workflow
 
-- [x] #### Requirements analysis
+- [x] **Requirements analysis**
 
   N/A→CITS4401 Week2
 
@@ -46,11 +46,11 @@
   - Contains **3-4 datasets** and **8+ dimensions**
   - **Report has no page limitation**
 
-- [ ] #### Business processes analysis
+- [ ] **Business processes analysis**
 
   N/A
 
-- [x] #### Dataset analysis
+- [x] **Dataset analysis**
 
   Week 3 Lecture
 
@@ -71,7 +71,7 @@
            - **Dwelling** (Dwelling_Records)
        - **Remoteness** (Remoteness_Areas, Estimated_Population)
 
-- [x] #### ETL⚠️(In progress) 
+- [x] **ETL⚠️(In progress)** 
 
   Week 3 Lab
 
@@ -83,33 +83,33 @@
 
   
 
-- [ ] #### Design dimension table and fact table
+- [ ] **Design dimension table and fact table**
 
   Week 2-4 Lectures
 
-- [ ] #### Depict data warehouse schema
+- [ ] **Depict data warehouse schema**
 
   Week 2 Lecture
 
-- [ ] #### Hierarchy and Starnet
+- [ ] **Hierarchy and Starnet**
 
   Week 2-3 Lectures
 
-- [ ] #### Cube
+- [ ] **Cube**
 
   Week 3 Lecture
 
-- [ ] #### Business queries
+- [ ] **Business queries**
 
   N/A
 
-- [ ] #### Results visualization
+- [ ] **Results visualization**
 
   Week 4-5 Labs
 
   * **GeoJSON**
 
-- [ ] #### Association rules mining
+- [ ] **Association rules mining**
 
   Week 5 Lecture + Week 6 Lab
 
