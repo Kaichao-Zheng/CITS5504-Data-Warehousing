@@ -65,13 +65,14 @@
      - **Crash** (Crash_ID, Crash_Type, Speed Limit)
        - **Fatality** (<u>Fatality_ID</u>, Gender, Age)
        - **Involvement** (Bus_Involvement, Heavy_Rigid_Truck_Involvement, Articulated_Truck_Involvement)
-       - **Date** (Year, Month, Dayweek, Time, Christmas_Period, Easter_Period)
+       - **Date** (Year, Month, Day_of_week, Time)
+         - **Festival** (Christmas_Period, Easter_Period)
        - **Location** (**GeoJSON**, State, SA4_Name)
          - **Local_Government_Area** (LGA_Code, National_LGA_Name, Estimated_Population)
            - **Dwelling** (Dwelling_Records)
        - **Remoteness** (Remoteness_Areas, Estimated_Population)
 
-- [x] **ETL⚠️(In progress)** 
+- [x] **ETL (In progress)** 
 
   Week 3 Lab
 
@@ -79,7 +80,7 @@
 
   `import pandas as pd`
 
-  ##### Data preprocessing - design measures
+  ##### Data preprocessing - design measures (Pending)
 
   
 
