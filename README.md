@@ -52,11 +52,11 @@
 
 - [x] **Dataset analysis**
 
-  Week 3 Lecture
+  Week 3-4 Lecture
 
-  1. Determine grains
+  1. **Determine grains**
 
-  2. Determine 8+ dimensions:
+  1. **Determine 8+ dimensions:**
 
      *Use italic to represent *measures*
 
@@ -64,12 +64,24 @@
 
      - **Crash** (Crash_ID, Crash_Type, Speed Limit)
        - **Fatality** (<u>Fatality_ID</u>, Gender, Age)
+       
+       - **Speed?**
+       
        - **Involvement** (Bus_Involvement, Heavy_Rigid_Truck_Involvement, Articulated_Truck_Involvement)
-       - **Date** (Year, Month, Day_of_week, Time)
+       
+       - **DateTime** (Year, Month, Day_of_week, Time)
+         
          - **Festival** (Christmas_Period, Easter_Period)
+         
+         - **Holiday**(IsHoliday, Period)	Lecture 4
+         
+           ❓Could be measure
+         
        - **Location** (**GeoJSON**, State, SA4_Name)
+         
          - **Local_Government_Area** (LGA_Code, National_LGA_Name, Estimated_Population)
            - **Dwelling** (Dwelling_Records)
+         
        - **Remoteness** (Remoteness_Areas, Estimated_Population)
 
 - [x] **ETL (In progress)** 
@@ -102,7 +114,15 @@
 
 - [ ] **Business queries**
 
-  N/A
+  See lecture scenarios
+
+  e.g. Week 4
+
+  What is the average ticket fare for economy class passengers?  
+
+  What is the average flight duration for flights to Europe in 2024?
+
+  What is the maximum ticket fare for business class passengers whose membership is gold in Q4 2023?
 
 - [ ] **Results visualization**
 
