@@ -62,20 +62,15 @@
 
      *Exclude <u>foreigner keys</u>
 
-     - **Crash** (Crash_ID, Crash_Type, Speed Limit)
-       - **Fatality** (<u>Fatality_ID</u>, Gender, Age)
+     - **Crash** (Crash_ID, Crash_Type)
+       - **Fatality** (Gender, Age)
        
-       - **Speed?**
+       - **Junk** (Speed Limit)
        
        - **Involvement** (Bus_Involvement, Heavy_Rigid_Truck_Involvement, Articulated_Truck_Involvement)
        
-       - **DateTime** (Year, Month, Day_of_week, Time)
-         
-         - **Festival** (Christmas_Period, Easter_Period)
-         
-         - **Holiday**(IsHoliday, Period)	Lecture 4
-         
-           ❓Could be measure
+       - **DateTime** (Year, Month, Day_of_week, Time)✔️
+         - **Holiday**(Period, isHoliday)✔️
          
        - **Location** (**GeoJSON**, State, SA4_Name)
          
@@ -83,7 +78,7 @@
            - **Dwelling** (Dwelling_Records)
          
        - **Remoteness** (Remoteness_Areas, Estimated_Population)
-
+  
 - [x] **ETL (In progress)** 
 
   Week 3 Lab
