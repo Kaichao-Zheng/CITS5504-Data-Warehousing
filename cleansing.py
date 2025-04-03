@@ -1,20 +1,56 @@
 import pandas as pd
 
+def getDim_Crash():
+    # Progress messages
+    print("Executing for getDim_Crash() ...")
+    
+    # import fatality dimension
+    global crash
+    
+    # Cleanse date dimension
+    crash = crash.dropna()
+    crash = crash.drop_duplicates()
+    
+    # JOIN to fact table
+    fatality = fatality.merge(crash, on=['Crash ID'], how='left')
+    
+    # Reorder columns
+    crash = crash.rename(columns={'Dayweek':'Day of Week'})
+    crash = crash[['Date ID', 'Month', 'Year', 'Day of Week', 'Time']]
+    
+    # Export
+    crash.to_csv("output/Dim_DateTime.csv", index = False)
+    
+    # Testing
+    crash.info()
+    
+def getDim_Involvement():
+    # Progress messages
+    print("Executing for getDim_Involvement() ...")
+
 def getDim_DateTime():
-    global crashes
-    dateTime = crashes[['Month','Year','Dayweek','Time']].copy()
+    # Progress messages
+    print("Executing getDim_DateTime() ...")
+    print("Should remain 48435/56873 rows")
+    
+    # Create dateTime dimension
+    global fatality
+    dateTime = fatality[['Month','Year','Dayweek','Time']].copy()
     
     # Cleanse date dimension
     dateTime = dateTime.dropna()
     dateTime = dateTime.drop_duplicates()
+    
     # Add primary key
     dateTime['Date ID'] = range(1, 1+len(dateTime))
     
-    # JOIN to fatal dataframe
-    crashes = crashes.merge(dateTime, on=['Month','Year','Dayweek','Time'], how='left')
+    # JOIN to fact table
+    fatality = fatality.merge(dateTime, on=['Month','Year','Dayweek','Time'], how='left')
+    
+    # Rename column
+    dateTime = dateTime.rename(columns={'Dayweek':'Day of Week'})
     
     # Reorder columns
-    dateTime = dateTime.rename(columns={'Dayweek':'Day of Week'})
     dateTime = dateTime[['Date ID', 'Month', 'Year', 'Day of Week', 'Time']]
     
     # Export
@@ -24,58 +60,104 @@ def getDim_DateTime():
     dateTime.info()
 
 def getDim_Holiday():
-    global crashes
-    crashes['Period'] = pd.NA
-    rawData = crashes[['Christmas Period','Easter Period']].copy()
+    # Progress messages
+    print("Executing getDim_Holiday() ...")
+    print("Should remain 3/814 rows")
+    
+    # Create holiday dimension
+    global fatality
+    fatality['Period'] = pd.NA
+    holiday = pd.DataFrame(columns=['Period','isHoliday'])
     
     # Flag data conversion
-    holiday = pd.DataFrame(columns=['Period','isHoliday'])
+    rawData = fatality[['Christmas Period','Easter Period']].copy()
     for index, row in rawData.iterrows():
         # Classify period
         if row['Christmas Period'] == 'Yes' and row['Easter Period'] == 'Yes':
-            crashes.loc[index, 'Period'] = pd.NA
+            fatality.loc[index, 'Period'] = pd.NA
             holiday.loc[index, 'Period'] = pd.NA
             holiday.loc[index, 'isHoliday'] = pd.NA
         elif row['Christmas Period'] == 'Yes':
-            crashes.loc[index, 'Period'] = 'Christmas'
+            fatality.loc[index, 'Period'] = 'Christmas'
             holiday.loc[index, 'Period'] = 'Christmas'
             holiday.loc[index, 'isHoliday'] = 'Holiday'
         elif row['Easter Period'] == 'Yes':
-            crashes.loc[index, 'Period'] = 'Easter'
+            fatality.loc[index, 'Period'] = 'Easter'
             holiday.loc[index, 'Period'] = 'Easter'
             holiday.loc[index, 'isHoliday'] = 'Holiday'
         elif row['Christmas Period'] == 'No' and row['Easter Period'] == 'No':
-            crashes.loc[index, 'Period'] = 'Neither'
+            fatality.loc[index, 'Period'] = 'Neither'
             holiday.loc[index, 'Period'] = 'Neither'
             holiday.loc[index, 'isHoliday'] = 'Unknown'
-    # Cleanse date dimension
+    fatality.drop(columns=['Christmas Period', 'Easter Period'], inplace=True)
+    
+    # Cleanse holiday dimension
     holiday = holiday.dropna()
     holiday = holiday.drop_duplicates()
+    
     # Export
     holiday.to_csv("output/Dim_Holiday.csv", index = False)
     
     # Testing
     holiday.info()
-        
-# Import raw data
-crashes = pd.read_excel("src/bitre_fatal_crashes_dec2024.xlsx", sheet_name = "BITRE_Fatal_Crash", skiprows = 4)
-fatalities = pd.read_excel("src/bitre_fatalities_dec2024.xlsx", sheet_name = "BITRE_Fatality", skiprows = 4)
+    
+def getDim_Location():
+    # Progress messages
+    print("Executing getDim_Location() ...")
+
+def getDim_LGA():
+    # Progress messages
+    print("Executing for getDim_LGA() ...")
+    
+def getDim_Dwelling():
+    # Progress messages
+    print("Executing for getDim_Dwelling() ...")
+    
+def getDim_Remoteness():
+    # Progress messages
+    print("Executing for getDim_Remoteness() ...")
+
+# main()
+# Progress messages
+print("Importing raw data spreadsheets ...")
+
+# Import raw spreadsheets
+fatality = pd.read_excel(
+    "src/bitre_fatalities_dec2024.xlsx",
+    sheet_name = "BITRE_Fatality",
+    skiprows = 4
+)
+crash = pd.read_excel(
+    "src/bitre_fatal_crashes_dec2024.xlsx",
+    sheet_name = "BITRE_Fatal_Crash",
+    skiprows = 4
+)
+
+# Add primary key and pin to left
+fatality['Fatality ID'] = range(1, 1+len(fatality))
+fatality = fatality[['Fatality ID'] + [col for col in fatality.columns if col != 'Fatality ID']]
 
 # Delete redundant columns
-crashes.drop(columns=['Day of week'], inplace = True)
+fatality.drop(columns=['Day of week', 'Time of day', 'Age Group'], inplace=True)
+
+# Convert columns to numeric
+fatality.loc[:, ['Month']] = pd.to_numeric(fatality['Month'], errors = 'coerce')
+fatality.loc[:, ['Year']] = pd.to_numeric(fatality['Year'], errors = 'coerce')
 
 # Void invalid cells
-crashes.loc[:, ['Month']] = pd.to_numeric(crashes['Month'], errors = 'coerce')
-crashes.loc[:, ['Year']] = pd.to_numeric(crashes['Year'], errors = 'coerce')
 invalid = [-9,'-9','Unknown','Undetermined']
-crashes.replace(invalid, pd.NA, inplace = True)
+fatality.replace(invalid, pd.NA, inplace = True)
+crash.replace(invalid, pd.NA, inplace = True)
 
 # Export dimension tables
 getDim_DateTime()
 getDim_Holiday()
 
 # Rename columns
-crashes = crashes.rename(columns={'Dayweek':'Day of Week'})
+fatality = fatality.rename(columns={'Dayweek':'Day of Week'})
 
 # Export Fact table
-crashes.to_csv("output/Fact_Crashes.csv", index = False)
+fatality.to_csv("output/Fact_Fatality.csv", index = False)
+
+# Testing
+print("Cleansing complete\n")

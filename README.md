@@ -62,22 +62,16 @@
 
      *Exclude <u>foreigner keys</u>
 
-     - **Crash** (Crash_ID, Crash_Type)
-       - **Fatality** (Gender, Age)
-       
-       - **Junk** (Speed Limit)
-       
-       - **Involvement** (Bus_Involvement, Heavy_Rigid_Truck_Involvement, Articulated_Truck_Involvement)
-       
-       - **DateTime** (Year, Month, Day_of_week, Time)✔️
+     - **Fatality** (Fatality ID, Gender, Age)
+       - **Crash** (Crash ID, Crash Type, Road User, Speed Limit)
+       - **Involvement** (Bus Involvement, Heavy Rigid Truck Involvement, Articulated Truck Involvement)
+       - **DateTime** (Year, Month, Day of week, Time)✔️
          - **Holiday**(Period, isHoliday)✔️
-         
        - **Location** (**GeoJSON**, State, SA4_Name)
          
-         - **Local_Government_Area** (LGA_Code, National_LGA_Name, Estimated_Population)
-           - **Dwelling** (Dwelling_Records)
-         
-       - **Remoteness** (Remoteness_Areas, Estimated_Population)
+         - **Local_Government_Area** (LGA Code, National LGA Name, Estimated Population)
+           - **Dwelling** (Dwelling Records)
+       - **Remoteness** (Remoteness Areas, Estimated Population)
   
 - [x] **ETL (In progress)** 
 
