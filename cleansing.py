@@ -3,23 +3,23 @@ import pandas as pd
 def getDim_Crash():
     # Progress messages
     print("Executing for getDim_Crash() ...")
+    print("Should remain 51285/56873 rows")
     
-    # import fatality dimension
-    global crash
+    # import dimension
+    global fatality
+    crash = fatality[['Crash ID', 'Crash Type', 'Speed Limit']].copy()
     
-    # Cleanse date dimension
-    crash = crash.dropna()
+    # Cleanse dimension
+    crash = crash.dropna(subset=['Crash ID'])
     crash = crash.drop_duplicates()
     
-    # JOIN to fact table
-    fatality = fatality.merge(crash, on=['Crash ID'], how='left')
-    
-    # Reorder columns
-    crash = crash.rename(columns={'Dayweek':'Day of Week'})
-    crash = crash[['Date ID', 'Month', 'Year', 'Day of Week', 'Time']]
+    # Pin foreign key to right
+    fatality = fatality[[col for col in fatality.columns if col != 'Crash ID'] + ['Crash ID']]
+    # Delete dimension properties
+    fatality.drop(columns=['Crash Type','Speed Limit'], inplace=True)
     
     # Export
-    crash.to_csv("output/Dim_DateTime.csv", index = False)
+    crash.to_csv("output/Dim_Crash.csv", index = False)
     
     # Testing
     crash.info()
@@ -27,18 +27,18 @@ def getDim_Crash():
 def getDim_Involvement():
     # Progress messages
     print("Executing for getDim_Involvement() ...")
+    print("Should remain ?/? rows")
 
 def getDim_DateTime():
     # Progress messages
     print("Executing getDim_DateTime() ...")
     print("Should remain 48435/56873 rows")
     
-    # Create dateTime dimension
+    # Create dimension
     global fatality
     dateTime = fatality[['Month','Year','Dayweek','Time']].copy()
     
-    # Cleanse date dimension
-    dateTime = dateTime.dropna()
+    # Cleanse dimension
     dateTime = dateTime.drop_duplicates()
     
     # Add primary key
@@ -46,11 +46,12 @@ def getDim_DateTime():
     
     # JOIN to fact table
     fatality = fatality.merge(dateTime, on=['Month','Year','Dayweek','Time'], how='left')
+    fatality.drop(columns=['Month','Year','Dayweek','Time'], inplace=True)
     
     # Rename column
     dateTime = dateTime.rename(columns={'Dayweek':'Day of Week'})
     
-    # Reorder columns
+    # Reshape columns
     dateTime = dateTime[['Date ID', 'Month', 'Year', 'Day of Week', 'Time']]
     
     # Export
@@ -64,12 +65,14 @@ def getDim_Holiday():
     print("Executing getDim_Holiday() ...")
     print("Should remain 3/814 rows")
     
-    # Create holiday dimension
+    # Add foreign key
     global fatality
     fatality['Period'] = pd.NA
+    
+    # Create dimension
     holiday = pd.DataFrame(columns=['Period','isHoliday'])
     
-    # Flag data conversion
+    # Flag data conversion and JOIN
     rawData = fatality[['Christmas Period','Easter Period']].copy()
     for index, row in rawData.iterrows():
         # Classify period
@@ -91,8 +94,8 @@ def getDim_Holiday():
             holiday.loc[index, 'isHoliday'] = 'Unknown'
     fatality.drop(columns=['Christmas Period', 'Easter Period'], inplace=True)
     
-    # Cleanse holiday dimension
-    holiday = holiday.dropna()
+    # Cleanse dimension
+    holiday = holiday.dropna(subset=['Period'])
     holiday = holiday.drop_duplicates()
     
     # Export
@@ -127,11 +130,6 @@ fatality = pd.read_excel(
     sheet_name = "BITRE_Fatality",
     skiprows = 4
 )
-crash = pd.read_excel(
-    "src/bitre_fatal_crashes_dec2024.xlsx",
-    sheet_name = "BITRE_Fatal_Crash",
-    skiprows = 4
-)
 
 # Add primary key and pin to left
 fatality['Fatality ID'] = range(1, 1+len(fatality))
@@ -147,9 +145,9 @@ fatality.loc[:, ['Year']] = pd.to_numeric(fatality['Year'], errors = 'coerce')
 # Void invalid cells
 invalid = [-9,'-9','Unknown','Undetermined']
 fatality.replace(invalid, pd.NA, inplace = True)
-crash.replace(invalid, pd.NA, inplace = True)
 
 # Export dimension tables
+getDim_Crash()
 getDim_DateTime()
 getDim_Holiday()
 
