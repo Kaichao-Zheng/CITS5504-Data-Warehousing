@@ -1,3 +1,4 @@
+import os
 import pandas as pd
 
 def getDim_Crash():
@@ -7,16 +8,16 @@ def getDim_Crash():
     
     # import dimension
     global fatality
-    crash = fatality[['Crash ID', 'Crash Type', 'Speed Limit']].copy()
+    crash = fatality[['Crash ID', 'Crash Type', 'Speed Limit']].copy() 
+    fatality = fatality.drop(columns=['Crash Type','Speed Limit'])
     
     # Cleanse dimension
     crash = crash.dropna(subset=['Crash ID'])
     crash = crash.drop_duplicates()
+    crash = crash.fillna('Unknown')
     
     # Pin foreign key to right
     fatality = fatality[[col for col in fatality.columns if col != 'Crash ID'] + ['Crash ID']]
-    # Delete dimension properties
-    fatality.drop(columns=['Crash Type','Speed Limit'], inplace=True)
     
     # Export
     crash.to_csv("output/Dim_Crash.csv", index = False)
@@ -27,32 +28,59 @@ def getDim_Crash():
 def getDim_Involvement():
     # Progress messages
     print("Executing for getDim_Involvement() ...")
-    print("Should remain ?/? rows")
-
+    print("Should remain 13/32584 rows")
+    
+    # Create dimension
+    global fatality
+    involve = fatality[['Bus Involvement','Heavy Rigid Truck Involvement','Articulated Truck Involvement']].copy()
+    
+    # Cleanse dimension
+    involve = involve.dropna(how='all')
+    involve = involve.drop_duplicates()
+    involve= involve.fillna('Unknown')
+    # Add primary key
+    involve['involve ID'] = range(1, 1+len(involve))
+    
+    # JOIN to fact table
+    fatality = fatality.merge(involve, on=['Bus Involvement','Heavy Rigid Truck Involvement','Articulated Truck Involvement'], how='left')
+    fatality = fatality.drop(columns=['Bus Involvement','Heavy Rigid Truck Involvement','Articulated Truck Involvement'])
+    
+    # Reshape columns
+    involve = involve.rename(columns={
+        'Bus Involvement': 'Bus',
+        'Heavy Rigid Truck Involvement': 'Heavy Rigid Truck',
+        'Articulated Truck Involvement': 'Articulated Truck'
+    })
+    involve = involve[['involve ID'] + [col for col in involve.columns if col != 'involve ID']]
+    
+    # Export
+    involve.to_csv("output/Dim_Involvement.csv", index = False)
+    
+    # Testing
+    involve.info()
+    
 def getDim_DateTime():
     # Progress messages
     print("Executing getDim_DateTime() ...")
-    print("Should remain 48435/56873 rows")
+    print("Should remain 48473/56873 rows")
     
     # Create dimension
     global fatality
     dateTime = fatality[['Month','Year','Dayweek','Time']].copy()
     
     # Cleanse dimension
+    dateTime = dateTime.dropna(how='all')
     dateTime = dateTime.drop_duplicates()
-    
     # Add primary key
     dateTime['Date ID'] = range(1, 1+len(dateTime))
     
     # JOIN to fact table
     fatality = fatality.merge(dateTime, on=['Month','Year','Dayweek','Time'], how='left')
-    fatality.drop(columns=['Month','Year','Dayweek','Time'], inplace=True)
-    
-    # Rename column
-    dateTime = dateTime.rename(columns={'Dayweek':'Day of Week'})
+    fatality = fatality.drop(columns=['Month','Year','Dayweek','Time'])
     
     # Reshape columns
-    dateTime = dateTime[['Date ID', 'Month', 'Year', 'Day of Week', 'Time']]
+    dateTime = dateTime.rename(columns={'Dayweek':'Day of Week'})
+    dateTime = dateTime[['Date ID'] + [col for col in dateTime.columns if col != 'Date ID']]
     
     # Export
     dateTime.to_csv("output/Dim_DateTime.csv", index = False)
@@ -60,49 +88,49 @@ def getDim_DateTime():
     # Testing
     dateTime.info()
 
-def getDim_Holiday():
+def getDim_Period():
     # Progress messages
-    print("Executing getDim_Holiday() ...")
-    print("Should remain 3/814 rows")
+    print("Executing getDim_Period() ...")
+    print("Should remain 2/892 rows")
     
     # Add foreign key
     global fatality
-    fatality['Period'] = pd.NA
+    fatality['Period Name'] = pd.NA
+    rawData = fatality[['Christmas Period','Easter Period']].copy()
+    fatality = fatality.drop(columns=['Christmas Period', 'Easter Period'])
     
     # Create dimension
-    holiday = pd.DataFrame(columns=['Period','isHoliday'])
+    period = pd.DataFrame(columns=['Period Name','Period Type'])
     
     # Flag data conversion and JOIN
-    rawData = fatality[['Christmas Period','Easter Period']].copy()
     for index, row in rawData.iterrows():
         # Classify period
-        if row['Christmas Period'] == 'Yes' and row['Easter Period'] == 'Yes':
-            fatality.loc[index, 'Period'] = pd.NA
-            holiday.loc[index, 'Period'] = pd.NA
-            holiday.loc[index, 'isHoliday'] = pd.NA
+        if row['Christmas Period'] == 'Yes' and row['Easter Period'] == 'Yes':  # logic error
+            fatality.loc[index, 'Period Name'] = pd.NA
+            period.loc[index, 'Period Name'] = pd.NA
+            period.loc[index, 'Period Type'] = pd.NA
         elif row['Christmas Period'] == 'Yes':
-            fatality.loc[index, 'Period'] = 'Christmas'
-            holiday.loc[index, 'Period'] = 'Christmas'
-            holiday.loc[index, 'isHoliday'] = 'Holiday'
+            fatality.loc[index, 'Period Name'] = 'Christmas'
+            period.loc[index, 'Period Name'] = 'Christmas'
+            period.loc[index, 'Period Type'] = 'Holiday'
         elif row['Easter Period'] == 'Yes':
-            fatality.loc[index, 'Period'] = 'Easter'
-            holiday.loc[index, 'Period'] = 'Easter'
-            holiday.loc[index, 'isHoliday'] = 'Holiday'
+            fatality.loc[index, 'Period Name'] = 'Easter'
+            period.loc[index, 'Period Name'] = 'Easter'
+            period.loc[index, 'Period Type'] = 'Holiday'
         elif row['Christmas Period'] == 'No' and row['Easter Period'] == 'No':
-            fatality.loc[index, 'Period'] = 'Neither'
-            holiday.loc[index, 'Period'] = 'Neither'
-            holiday.loc[index, 'isHoliday'] = 'Unknown'
-    fatality.drop(columns=['Christmas Period', 'Easter Period'], inplace=True)
+            fatality.loc[index, 'Period Name'] = pd.NA
+            period.loc[index, 'Period Name'] = pd.NA
+            period.loc[index, 'Period Type'] = pd.NA
     
     # Cleanse dimension
-    holiday = holiday.dropna(subset=['Period'])
-    holiday = holiday.drop_duplicates()
+    period = period.dropna(subset=['Period Name'])
+    period = period.drop_duplicates()
     
     # Export
-    holiday.to_csv("output/Dim_Holiday.csv", index = False)
+    period.to_csv("output/Dim_Period.csv", index = False)
     
     # Testing
-    holiday.info()
+    period.info()
     
 def getDim_Location():
     # Progress messages
@@ -136,20 +164,19 @@ fatality['Fatality ID'] = range(1, 1+len(fatality))
 fatality = fatality[['Fatality ID'] + [col for col in fatality.columns if col != 'Fatality ID']]
 
 # Delete redundant columns
-fatality.drop(columns=['Day of week', 'Time of day', 'Age Group'], inplace=True)
-
-# Convert columns to numeric
-fatality.loc[:, ['Month']] = pd.to_numeric(fatality['Month'], errors = 'coerce')
-fatality.loc[:, ['Year']] = pd.to_numeric(fatality['Year'], errors = 'coerce')
+fatality = fatality.drop(columns=['Day of week', 'Time of day', 'Age Group'])
 
 # Void invalid cells
 invalid = [-9,'-9','Unknown','Undetermined']
-fatality.replace(invalid, pd.NA, inplace = True)
+fatality = fatality.replace(invalid, pd.NA)
 
 # Export dimension tables
+if not os.path.exists("output"):
+    os.makedirs("output")
 getDim_Crash()
+getDim_Involvement()
 getDim_DateTime()
-getDim_Holiday()
+getDim_Period()
 
 # Rename columns
 fatality = fatality.rename(columns={'Dayweek':'Day of Week'})
