@@ -63,7 +63,7 @@
      *Exclude <u>foreigner keys</u>
 
      - **Fatality** (Fatality ID, Gender, Road User)
-       - **Age** (Age, Age Group)
+       - **Age** (Age, Age Group)✔️
        - **Crash** (Crash ID, Crash Type, Speed Limit)✔️
        - **Involvement** (Bus Involvement, Heavy Rigid Truck Involvement, Articulated Truck Involvement)✔️
        - **DateTime** (Year, Month, Day of week, Time)✔️

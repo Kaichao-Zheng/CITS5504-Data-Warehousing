@@ -1,15 +1,35 @@
 import os
 import pandas as pd
 
-def getDim_Crash():
+def getDim_Age():
     # Progress messages
-    print("Executing for getDim_Crash() ...")
-    print("Should remain 51285/56873 rows")
+    print("Executing getDim_Age() ...")
+    print("Should remain ?/? rows")
     
     # import dimension
     global fatality
-    crash = fatality[['Crash ID', 'Crash Type', 'Speed Limit']].copy() 
-    fatality = fatality.drop(columns=['Crash Type','Speed Limit'])
+    age = fatality[['103','5461']].copy()
+    fatality = fatality.drop(columns=['Age Group'])
+    
+    # Cleanse dimension
+    age = age.dropna(subset=['Age'])
+    age = age.drop_duplicates()
+    
+    # Export
+    age.to_csv("output/Dim_Age.csv", index = False)
+    
+    # Testing
+    age.info()
+    print()
+
+def getDim_Crash():
+    # Progress messages
+    print("Executing for getDim_Crash() ...")
+    print("Should remain 51284/51283 rows")
+    
+    # import dimension
+    global fatality
+    global crash    # Fatalities of Crash_ID:20164024 in Fatality.xlsx has conflict Speed_Limit
     
     # Cleanse dimension
     crash = crash.dropna(subset=['Crash ID'])
@@ -17,6 +37,7 @@ def getDim_Crash():
     crash = crash.fillna('Unknown')
     
     # Pin foreign key to right
+    fatality = fatality.drop(columns=['Crash Type','Speed Limit'])
     fatality = fatality[[col for col in fatality.columns if col != 'Crash ID'] + ['Crash ID']]
     
     # Export
@@ -24,6 +45,7 @@ def getDim_Crash():
     
     # Testing
     crash.info()
+    print()
     
 def getDim_Involvement():
     # Progress messages
@@ -58,6 +80,7 @@ def getDim_Involvement():
     
     # Testing
     involve.info()
+    print()
     
 def getDim_DateTime():
     # Progress messages
@@ -79,6 +102,7 @@ def getDim_DateTime():
     fatality = fatality.drop(columns=['Month','Year','Dayweek','Time'])
     
     # Reshape columns
+    fatality = fatality.rename(columns={'Dayweek':'Day of Week'})
     dateTime = dateTime.rename(columns={'Dayweek':'Day of Week'})
     dateTime = dateTime[['Date ID'] + [col for col in dateTime.columns if col != 'Date ID']]
     
@@ -87,6 +111,7 @@ def getDim_DateTime():
     
     # Testing
     dateTime.info()
+    print()
 
 def getDim_Period():
     # Progress messages
@@ -131,6 +156,7 @@ def getDim_Period():
     
     # Testing
     period.info()
+    print()
     
 def getDim_Location():
     # Progress messages
@@ -150,7 +176,7 @@ def getDim_Remoteness():
 
 # main()
 # Progress messages
-print("Importing raw data spreadsheets ...")
+print("Importing raw data spreadsheets ...\n")
 
 # Import raw spreadsheets
 fatality = pd.read_excel(
@@ -158,28 +184,33 @@ fatality = pd.read_excel(
     sheet_name = "BITRE_Fatality",
     skiprows = 4
 )
+crash = pd.read_excel(
+    "src/bitre_fatal_crashes_dec2024.xlsx",
+    sheet_name = "BITRE_Fatal_Crash",
+    skiprows = 4,
+    usecols=['Crash ID', 'Crash Type', 'Speed Limit']
+)
 
 # Add primary key and pin to left
 fatality['Fatality ID'] = range(1, 1+len(fatality))
 fatality = fatality[['Fatality ID'] + [col for col in fatality.columns if col != 'Fatality ID']]
 
 # Delete redundant columns
-fatality = fatality.drop(columns=['Day of week', 'Time of day', 'Age Group'])
+fatality = fatality.drop(columns=['Day of week', 'Time of day'])
 
 # Void invalid cells
 invalid = [-9,'-9','Unknown','Undetermined']
 fatality = fatality.replace(invalid, pd.NA)
+crash = crash.replace(invalid, pd.NA)
 
 # Export dimension tables
 if not os.path.exists("output"):
     os.makedirs("output")
+getDim_Age()
 getDim_Crash()
 getDim_Involvement()
 getDim_DateTime()
 getDim_Period()
-
-# Rename columns
-fatality = fatality.rename(columns={'Dayweek':'Day of Week'})
 
 # Export Fact table
 fatality.to_csv("output/Fact_Fatality.csv", index = False)
