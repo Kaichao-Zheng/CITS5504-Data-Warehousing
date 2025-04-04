@@ -4,15 +4,18 @@ import pandas as pd
 def getDim_Age():
     # Progress messages
     print("Executing getDim_Age() ...")
-    print("Should remain ?/? rows")
+    print("Should remain 102/5461 rows")
     
-    # import dimension
+    # Import dimension
     global fatality
-    age = fatality[['103','5461']].copy()
-    fatality = fatality.drop(columns=['Age Group'])
+    age = fatality[['Age','Age Group']].copy()
+    
+    # Cleanse fact properties
+    global toDrop
+    toDrop += ['Age Group']
     
     # Cleanse dimension
-    age = age.dropna(subset=['Age'])
+    age = age.dropna()
     age = age.drop_duplicates()
     
     # Export
@@ -27,7 +30,7 @@ def getDim_Crash():
     print("Executing for getDim_Crash() ...")
     print("Should remain 51284/51283 rows")
     
-    # import dimension
+    # Import dimension
     global fatality
     global crash    # Fatalities of Crash_ID:20164024 in Fatality.xlsx has conflict Speed_Limit
     
@@ -37,7 +40,8 @@ def getDim_Crash():
     crash = crash.fillna('Unknown')
     
     # Pin foreign key to right
-    fatality = fatality.drop(columns=['Crash Type','Speed Limit'])
+    global toDrop
+    toDrop += ['Crash Type', 'Speed Limit']
     fatality = fatality[[col for col in fatality.columns if col != 'Crash ID'] + ['Crash ID']]
     
     # Export
@@ -63,11 +67,12 @@ def getDim_Involvement():
     # Add primary key
     involve['involve ID'] = range(1, 1+len(involve))
     
-    # JOIN to fact table
+    # Reshape fact properties
+    global toDrop
+    toDrop += ['Bus Involvement','Heavy Rigid Truck Involvement','Articulated Truck Involvement']
     fatality = fatality.merge(involve, on=['Bus Involvement','Heavy Rigid Truck Involvement','Articulated Truck Involvement'], how='left')
-    fatality = fatality.drop(columns=['Bus Involvement','Heavy Rigid Truck Involvement','Articulated Truck Involvement'])
-    
-    # Reshape columns
+        
+    # Reshape dimension properties
     involve = involve.rename(columns={
         'Bus Involvement': 'Bus',
         'Heavy Rigid Truck Involvement': 'Heavy Rigid Truck',
@@ -97,12 +102,12 @@ def getDim_DateTime():
     # Add primary key
     dateTime['Date ID'] = range(1, 1+len(dateTime))
     
-    # JOIN to fact table
+    # Reshape fact properties
+    global toDrop
+    toDrop += ['Month','Year','Dayweek','Time']
     fatality = fatality.merge(dateTime, on=['Month','Year','Dayweek','Time'], how='left')
-    fatality = fatality.drop(columns=['Month','Year','Dayweek','Time'])
     
-    # Reshape columns
-    fatality = fatality.rename(columns={'Dayweek':'Day of Week'})
+    # Reshape dimension properties
     dateTime = dateTime.rename(columns={'Dayweek':'Day of Week'})
     dateTime = dateTime[['Date ID'] + [col for col in dateTime.columns if col != 'Date ID']]
     
@@ -118,14 +123,15 @@ def getDim_Period():
     print("Executing getDim_Period() ...")
     print("Should remain 2/892 rows")
     
-    # Add foreign key
-    global fatality
-    fatality['Period Name'] = pd.NA
-    rawData = fatality[['Christmas Period','Easter Period']].copy()
-    fatality = fatality.drop(columns=['Christmas Period', 'Easter Period'])
-    
     # Create dimension
+    global fatality
+    rawData = fatality[['Christmas Period','Easter Period']].copy()
+    fatality['Period Name'] = pd.NA
     period = pd.DataFrame(columns=['Period Name','Period Type'])
+    
+    # Reshape fact properties
+    global toDrop
+    toDrop += ['Christmas Period','Easter Period']
     
     # Flag data conversion and JOIN
     for index, row in rawData.iterrows():
@@ -195,8 +201,9 @@ crash = pd.read_excel(
 fatality['Fatality ID'] = range(1, 1+len(fatality))
 fatality = fatality[['Fatality ID'] + [col for col in fatality.columns if col != 'Fatality ID']]
 
-# Delete redundant columns
-fatality = fatality.drop(columns=['Day of week', 'Time of day'])
+# Mark redundant columns
+fatality = fatality.drop(columns=['Day of week'])
+toDrop = ['Time of day']
 
 # Void invalid cells
 invalid = [-9,'-9','Unknown','Undetermined']
@@ -212,8 +219,10 @@ getDim_Involvement()
 getDim_DateTime()
 getDim_Period()
 
-# Export Fact table
+# Export fact table
+print("Drop:" + str(toDrop))
+fatality = fatality.drop(columns=toDrop)
 fatality.to_csv("output/Fact_Fatality.csv", index = False)
 
-# Testing
+# Status message
 print("Cleansing complete\n")
