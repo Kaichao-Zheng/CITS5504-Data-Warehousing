@@ -62,17 +62,14 @@
 
      *Exclude <u>foreigner keys</u>
 
-     - **Fatality** (Fatality ID, Gender, Road User)
+     - **Fatality** (Fatality ID, Gender, Road User)✔️
        - **Age** (Age, Age Group)✔️
        - **Crash** (Crash ID, Crash Type, Speed Limit)✔️
        - **Involvement** (Bus Involvement, Heavy Rigid Truck Involvement, Articulated Truck Involvement)✔️
        - **DateTime** (Year, Month, Day of week, Time)✔️
        - **Period**(Period Name, Period Type)✔️
-       - **Location** (**GeoJSON**, State, SA4 Name)
-         
-         - **Local_Government_Area** (LGA Code, National LGA Name, Estimated Population)
-           - **Dwelling** (Dwelling Records)
-       - **Remoteness** (Remoteness Areas, Estimated Population)
+       - **Location** (<u>**LGA Name**</u>, State, <u>Dwelling</u>, <u>LGA Code</u>)
+         - **LGA** (<u>LGA Code</u>, **Coordinates**)
   
 - [x] **ETL (In progress)** 
 
@@ -86,7 +83,7 @@
 
   
 
-- [ ] **Design dimension table and fact table**
+- [x] **Design dimension table and fact table**
 
   Week 2-4 Lectures
 
