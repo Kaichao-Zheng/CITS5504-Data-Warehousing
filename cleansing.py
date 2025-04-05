@@ -1,5 +1,6 @@
 import os
 import pandas as pd
+import geopandas as gpd
 
 def getDim_Age():
     # Progress messages
@@ -21,18 +22,23 @@ def getDim_Age():
     # Export
     age.to_csv("output/Dim_Age.csv", index = False)
     
-    # Testing
+    # Status message
     age.info()
     print()
 
-def getDim_Crash():
+def getDim_Crash(): 
     # Progress messages
     print("Executing for getDim_Crash() ...")
     print("Should remain 51284/51283 rows")
     
     # Import dimension
     global fatality
-    global crash    # Fatalities of Crash_ID:20164024 in Fatality.xlsx has conflict Speed_Limit
+    crash = pd.read_excel(      # Fatalities of Crash_ID:20164024 in Fatality.xlsx has conflict Speed_Limit
+        "src/bitre_fatal_crashes_dec2024.xlsx",
+        sheet_name = "BITRE_Fatal_Crash",
+        skiprows = 4,
+        usecols=['Crash ID', 'Crash Type', 'Speed Limit']
+    )
     
     # Cleanse dimension
     crash = crash.dropna(subset=['Crash ID'])
@@ -47,7 +53,7 @@ def getDim_Crash():
     # Export
     crash.to_csv("output/Dim_Crash.csv", index = False)
     
-    # Testing
+    # Status message
     crash.info()
     print()
     
@@ -83,7 +89,7 @@ def getDim_Involvement():
     # Export
     involve.to_csv("output/Dim_Involvement.csv", index = False)
     
-    # Testing
+    # Status message
     involve.info()
     print()
     
@@ -114,7 +120,7 @@ def getDim_DateTime():
     # Export
     dateTime.to_csv("output/Dim_DateTime.csv", index = False)
     
-    # Testing
+    # Status message
     dateTime.info()
     print()
 
@@ -160,69 +166,94 @@ def getDim_Period():
     # Export
     period.to_csv("output/Dim_Period.csv", index = False)
     
-    # Testing
+    # Status message
     period.info()
     print()
     
 def getDim_Location():
     # Progress messages
     print("Executing getDim_Location() ...")
+    
+    # Crease dimension
+    global fatality
+    location = fatality[['National LGA Name 2021']].copy()
+    
+    # Cleanse LGA Name
+    location['National LGA Name 2021'] = cleanse_LgaName(location['National LGA Name 2021'])
+
+def cleanse_LgaName(series):
+    # iterate
+    print(series)
+    
+    return series
 
 def getDim_LGA():
     # Progress messages
     print("Executing for getDim_LGA() ...")
+    print("Should remain 565/564 rows")
     
-def getDim_Dwelling():
-    # Progress messages
-    print("Executing for getDim_Dwelling() ...")
+    # Create dimension
+    rawGeo = gpd.read_file("src/LGA_2021_AUST_GDA94.geojson")
+    geo = rawGeo[['LGA_CODE21','LGA_NAME21','geometry']].copy()
     
-def getDim_Remoteness():
-    # Progress messages
-    print("Executing for getDim_Remoteness() ...")
+    # Cleanse dimension
+    geo = geo.replace(['ZZZZZ'], pd.NA)     # Invalid LGA Code for "Outside Australia"
+    geo = geo.dropna()
+    geo = geo.drop_duplicates()
+    
+    # Reshape dimension properties
+    geo = geo.rename(columns={
+        'LGA_CODE21':'LGA Code',
+        'LGA_NAME21':'LGA Name',
+        'geometry':'LGA Geometry'           # Dtype geometry can be drill down to coordinates later
+    })
+    
+    # Export as Power BI identifiable file format
+    geo.to_file("output/Dim_LGA.json", driver="GeoJSON")
+    
+    # Status message
+    geo.info()
+
 
 # main()
 # Progress messages
 print("Importing raw data spreadsheets ...\n")
 
-# Import raw spreadsheets
+# Import raw fact table
 fatality = pd.read_excel(
     "src/bitre_fatalities_dec2024.xlsx",
     sheet_name = "BITRE_Fatality",
     skiprows = 4
 )
-crash = pd.read_excel(
-    "src/bitre_fatal_crashes_dec2024.xlsx",
-    sheet_name = "BITRE_Fatal_Crash",
-    skiprows = 4,
-    usecols=['Crash ID', 'Crash Type', 'Speed Limit']
-)
 
-# Add primary key and pin to left
-fatality['Fatality ID'] = range(1, 1+len(fatality))
-fatality = fatality[['Fatality ID'] + [col for col in fatality.columns if col != 'Fatality ID']]
+# # Add primary key and pin to left
+# fatality['Fatality ID'] = range(1, 1+len(fatality))
+# fatality = fatality[['Fatality ID'] + [col for col in fatality.columns if col != 'Fatality ID']]
 
-# Mark redundant columns
-fatality = fatality.drop(columns=['Day of week'])
-toDrop = ['Time of day']
+# # Mark redundant columns
+# fatality = fatality.drop(columns=['Day of week'])
+# toDrop = ['Time of day']
 
-# Void invalid cells
-invalid = [-9,'-9','Unknown','Undetermined']
-fatality = fatality.replace(invalid, pd.NA)
-crash = crash.replace(invalid, pd.NA)
+# # Void invalid cells
+# invalid = [-9,'-9','Unknown','Undetermined']
+# fatality = fatality.replace(invalid, pd.NA)
+# crash = crash.replace(invalid, pd.NA)
 
 # Export dimension tables
 if not os.path.exists("output"):
     os.makedirs("output")
-getDim_Age()
-getDim_Crash()
-getDim_Involvement()
-getDim_DateTime()
-getDim_Period()
+# getDim_Age()
+# getDim_Crash()
+# getDim_Involvement()
+# getDim_DateTime()
+# getDim_Period()
+getDim_Location()
+# getDim_LGA()
 
-# Export fact table
-print("Drop:" + str(toDrop))
-fatality = fatality.drop(columns=toDrop)
-fatality.to_csv("output/Fact_Fatality.csv", index = False)
+# # Export fact table
+# print("Drop:" + str(toDrop))
+# fatality = fatality.drop(columns=toDrop)
+# fatality.to_csv("output/Fact_Fatality.csv", index = False)
 
 # Status message
 print("Cleansing complete\n")
