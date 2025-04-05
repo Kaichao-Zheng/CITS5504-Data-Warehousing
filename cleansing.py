@@ -2,6 +2,10 @@ import os
 import pandas as pd
 import geopandas as gpd
 
+replace_dict = {
+    'Anangu Pitjantjatjara Yankunytjatjara': 'Bayside (QLD)',
+}
+
 def getDim_Age():
     # Progress messages
     print("Executing getDim_Age() ...")
@@ -175,17 +179,13 @@ def getDim_Location():
     print("Executing getDim_Location() ...")
     
     # Crease dimension
-    global fatality
-    location = fatality[['National LGA Name 2021']].copy()
+    global fatality, replace_dict
+    location = fatality[['National LGA Name 2021', 'State']].copy()
     
     # Cleanse LGA Name
-    location['National LGA Name 2021'] = cleanse_LgaName(location['National LGA Name 2021'])
-
-def cleanse_LgaName(series):
-    # iterate
-    print(series)
-    
-    return series
+    location = location.dropna(subset=['National LGA Name 2021'])
+    location = location.drop_duplicates()
+    location['National LGA Name 2021'] = location['National LGA Name 2021'].replace(replace_dict)
 
 def getDim_LGA():
     # Progress messages
@@ -225,6 +225,10 @@ fatality = pd.read_excel(
     sheet_name = "BITRE_Fatality",
     skiprows = 4
 )
+
+# Import replace dict
+rawDict = pd.read_csv("replaceDict.csv")
+replace_dict = dict(zip(rawDict['original'], rawDict['replacement']))
 
 # # Add primary key and pin to left
 # fatality['Fatality ID'] = range(1, 1+len(fatality))
