@@ -1,2 +1,5 @@
-*.zip
 *.xmind
+*.csv
+*.json
+*.geojson
+*.zip
