@@ -20,44 +20,36 @@ def getDim_Age():
     
     # Export
     age.to_csv("out/Dim_Age.csv", index = False)
-    
-    # Status message
-    age.info()
-    print()
 
 def getDim_Crash(): 
     # Progress messages
-    print("Executing for getDim_Crash() ...")
+    print("Executing getDim_Crash() ...")
     
     # Import dimension
-    global fatality
+    global fatality, invalid
     crash = pd.read_excel(      # Fatalities of Crash_ID:20164024 in Fatality.xlsx has conflict Speed_Limit
         "src/bitre_fatal_crashes_dec2024.xlsx",
         sheet_name = "BITRE_Fatal_Crash",
         skiprows = 4,
-        usecols=['Crash ID', 'Crash Type', 'Speed Limit']
+        usecols=['Crash ID', 'Crash Type', 'Speed Limit', 'National Road Type']
     )
+    crash = crash.replace(invalid, pd.NA)
     
     # Cleanse dimension
     crash = crash.dropna(subset=['Crash ID'])
     crash = crash.drop_duplicates()
-    crash = crash.fillna('Unknown')
     
     # Pin foreign key to right
     global toDrop
-    toDrop += ['Crash Type', 'Speed Limit']
+    toDrop += ['Crash Type', 'Speed Limit', 'National Road Type']
     fatality = fatality[[col for col in fatality.columns if col != 'Crash ID'] + ['Crash ID']]
     
     # Export
     crash.to_csv("out/Dim_Crash.csv", index = False)
-    
-    # Status message
-    crash.info()
-    print()
-    
+
 def getDim_Involvement():
     # Progress messages
-    print("Executing for getDim_Involvement() ...")
+    print("Executing getDim_Involvement() ...")
     
     # Create dimension
     global fatality
@@ -68,7 +60,7 @@ def getDim_Involvement():
     involve = involve.drop_duplicates()
     involve= involve.fillna('Unknown')
     # Add primary key
-    involve['involve ID'] = range(1, 1+len(involve))
+    involve['Involve ID'] = range(1, 1+len(involve))
     
     # Reshape fact properties
     global toDrop
@@ -81,14 +73,10 @@ def getDim_Involvement():
         'Heavy Rigid Truck Involvement': 'Heavy Rigid Truck',
         'Articulated Truck Involvement': 'Articulated Truck'
     })
-    involve = involve[['involve ID'] + [col for col in involve.columns if col != 'involve ID']]
+    involve = involve[['Involve ID'] + [col for col in involve.columns if col != 'Involve ID']]
     
     # Export
     involve.to_csv("out/Dim_Involvement.csv", index = False)
-    
-    # Status message
-    involve.info()
-    print()
     
 def getDim_DateTime():
     # Progress messages
@@ -115,10 +103,6 @@ def getDim_DateTime():
     
     # Export
     dateTime.to_csv("out/Dim_DateTime.csv", index = False)
-    
-    # Status message
-    dateTime.info()
-    print()
 
 def getDim_Period():
     # Progress messages
@@ -160,11 +144,32 @@ def getDim_Period():
     
     # Export
     period.to_csv("out/Dim_Period.csv", index = False)
+
+def getDim_Dwelling():
+    # Progress messages
+    print("Executing getDim_Dwelling() ...")
     
-    # Status message
-    period.info()
-    print()
+    # Create dimension
+    dwell = pd.read_csv(
+        "src/LGA (count of dwellings).csv",
+        skiprows = 10,
+        usecols=[0, 1]
+    )
     
+    # Cleanse dimension
+    dwell = dwell.dropna()
+    dwell = dwell.drop_duplicates()
+    dwell['LGA (EN)'] = dwell['LGA (EN)'].replace(replace_dict)
+    
+    # Reshape dimension properties
+    dwell = dwell.rename(columns={
+        'LGA (EN)': 'LGA Name',
+        'Unnamed: 1': 'Dwelling'
+    })
+    
+    # Export
+    dwell.to_csv("out/Dim_Dwelling.csv", index = False)
+
 def getDim_Location():
     # Progress messages
     print("Executing getDim_Location() ...")
@@ -188,10 +193,18 @@ def getDim_Location():
     population = population.drop_duplicates()
     population['Local Government Area'] = population['Local Government Area'].replace(replace_dict)
     
+    # Reshape fact properties
+    global toDrop
+    toDrop += ['State']
+    
     # Reshape dimension properties
     location = location.rename(columns={
         'National LGA Name 2021': 'LGA Name',
     })
+    fatality = fatality.rename(columns={
+        'National LGA Name 2021': 'LGA Name',
+    })
+    
     population = population.rename(columns={
         'LGA code': 'LGA Code',
         'Local Government Area': 'LGA Name',
@@ -205,10 +218,6 @@ def getDim_Location():
     
     # Export as Power BI identifiable file format
     location.to_csv("out/Dim_Location.csv", index = False)
-    
-    # Status message
-    location.info()
-    print()
 
 def getDim_LGA():
     # Progress messages
@@ -233,16 +242,10 @@ def getDim_LGA():
     
     # Export as Power BI identifiable file format
     geo.to_file("out/Dim_LGA.json", driver="GeoJSON")
-    
-    # Status message
-    geo.info()
-
 
 # main()
-# Progress messages
-print("Importing raw data spreadsheets ...\n")
-
 # Import raw fact table
+print("Importing fatality data as fact table ...")
 fatality = pd.read_excel(
     "src/bitre_fatalities_dec2024.xlsx",
     sheet_name = "BITRE_Fatality",
@@ -253,34 +256,37 @@ fatality = pd.read_excel(
 rawDict = pd.read_csv("dict/replaceDict.csv")
 replace_dict = dict(zip(rawDict['original'], rawDict['replacement']))
 
-# # Add primary key and pin to left
-# fatality['Fatality ID'] = range(1, 1+len(fatality))
-# fatality = fatality[['Fatality ID'] + [col for col in fatality.columns if col != 'Fatality ID']]
+# Add primary key and pin to left
+fatality['Fatality ID'] = range(1, 1+len(fatality))
+fatality = fatality[['Fatality ID'] + [col for col in fatality.columns if col != 'Fatality ID']]
 
-# # Mark redundant columns
-# fatality = fatality.drop(columns=['Day of week'])
-# toDrop = ['Time of day']
+# Mark redundant columns
+fatality = fatality.drop(columns=['Day of week'])
+toDrop = ['Time of day']
 
-# # Void invalid cells
-# invalid = [-9,'-9','Unknown','Undetermined']
-# fatality = fatality.replace(invalid, pd.NA)
-# crash = crash.replace(invalid, pd.NA)
+# Void invalid cells
+invalid = [-9,'-9','Unknown','Undetermined']
+fatality = fatality.replace(invalid, pd.NA)
 
 # Export dimension tables
 if not os.path.exists("out"):
     os.makedirs("out")
-# getDim_Age()
-# getDim_Crash()
-# getDim_Involvement()
-# getDim_DateTime()
-# getDim_Period()
+getDim_Age()
+getDim_Crash()
+getDim_Involvement()
+getDim_DateTime()
+getDim_Period()
+getDim_Dwelling()
 getDim_Location()
-# getDim_LGA()
+getDim_LGA()
 
-# # Export fact table
-# print("Drop:" + str(toDrop))
-# fatality = fatality.drop(columns=toDrop)
-# fatality.to_csv("out/Fact_Fatality.csv", index = False)
+# Reshape fact properties
+print("Drop redundant properties in fact table ...")
+fatality = fatality.drop(columns=toDrop)
+fatality = fatality[['Fatality ID','Gender','Age','Road User','Crash ID','Involve ID','Date ID','Period Name','LGA Name','National Remoteness Areas','SA4 Name 2021']]
+
+# Export fact table
+fatality.to_csv("out/Fact_Fatality.csv", index = False)
 
 # Status message
-print("Cleansing complete\n")
+print("Cleansing complete!\n")

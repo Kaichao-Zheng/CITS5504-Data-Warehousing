@@ -1,26 +1,5 @@
 # CITS5504 Project 1
 
-## Timeline
-
-| Date            | Week      | Lectures                      | Labs                      | Project                    |
-| :-------------- | :-------- | :---------------------------- | ------------------------- | -------------------------- |
-| 24 Feb - 02 Mar | Week 1    | **Intro Data Warehousing**    | Lab 0	**Online  Quiz** | **Group Project 25%**      |
-| 03 Mar - 09 Mar | Week 2    | Data Warehouse Design         | Lab 1-1                   | ✔Dataset analysis          |
-| 10 Mar - 16 Mar | Week 3    | Data Cube Technologies        | Lab 1-2                   | ⌛ETL                       |
-| 17 Mar - 23 Mar | Week 4    | Dimension Modelling           | Lab 1-3                   |                            |
-| 24 Mar - 30 Mar | Week 5    | Association Rule Mining       | Lab 1-4	**Lab  Demo**  |                            |
-| 31 Mar - 06 Apr | Week 6    | Data Marts and Metadata       | Lab 1-5	**Lab Demo**   |                            |
-| 07 Apr - 13 Apr | Week 7    | **Intro Graph Databases**     | **Consultation**          | Due on 11 Apr              |
-| 14 Apr - 20 Apr | Week 8    | Graph Data Modelling          | Lab 2-1                   |                            |
-| 21 Apr - 27 Apr | **Break** |                               |                           |                            |
-| 28 Apr - 04 May | Week 9    | *Guest Lecture*               | Lab 2-2                   | **Individual Project 20%** |
-| 05 May - 11 May | Week 10   | Graph Queries - Cypher        | Lab 2-3                   |                            |
-| 12 May - 18 May | Week 11   | Advanced Cypher               | Lab 2-4                   |                            |
-| 19 May - 25 May | Week 12   | Path Finding and Graph Search | Lab 2-5                   | Due on 23 May              |
-| 26 May - 01 Jun | **Break** |                               |                           |                            |
-
-
-
 ## Data Warehousing Flow Diagram
 
 <img src="https://s2.loli.net/2025/03/03/d3Dw12vpkCO5BUf.png" alt="image.png" style="zoom:50%;" />
@@ -70,7 +49,7 @@
        - **Period**(Period Name, Period Type)✔️
        - **Location** (<u>LGA Code</u>, <u>LGA Name</u>, State)✔️
          - **LGA** (<u>LGA Code</u>, **Coordinates**)✔️
-         - **Dwelling** (<u>LGA Name</u>, Dwelling)
+         - **Dwelling** (<u>LGA Name</u>, Dwelling)✔️
   
 - [x] **ETL (In progress)** 
 
