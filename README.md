@@ -68,8 +68,9 @@
        - **Involvement** (Bus Involvement, Heavy Rigid Truck Involvement, Articulated Truck Involvement)✔️
        - **DateTime** (Year, Month, Day of week, Time)✔️
        - **Period**(Period Name, Period Type)✔️
-       - **Location** (<u>**LGA Name**</u>, State, <u>Dwelling</u>, <u>LGA Code</u>)
-         - **LGA** (<u>LGA Code</u>, **Coordinates**)
+       - **Location** (<u>LGA Code</u>, <u>LGA Name</u>, State)✔️
+         - **LGA** (<u>LGA Code</u>, **Coordinates**)✔️
+         - **Dwelling** (<u>LGA Name</u>, Dwelling)
   
 - [x] **ETL (In progress)** 
 
