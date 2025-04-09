@@ -2,14 +2,9 @@ import os
 import pandas as pd
 import geopandas as gpd
 
-replace_dict = {
-    'Anangu Pitjantjatjara Yankunytjatjara': 'Bayside (QLD)',
-}
-
 def getDim_Age():
     # Progress messages
     print("Executing getDim_Age() ...")
-    print("Should remain 102/5461 rows")
     
     # Import dimension
     global fatality
@@ -24,7 +19,7 @@ def getDim_Age():
     age = age.drop_duplicates()
     
     # Export
-    age.to_csv("output/Dim_Age.csv", index = False)
+    age.to_csv("out/Dim_Age.csv", index = False)
     
     # Status message
     age.info()
@@ -33,7 +28,6 @@ def getDim_Age():
 def getDim_Crash(): 
     # Progress messages
     print("Executing for getDim_Crash() ...")
-    print("Should remain 51284/51283 rows")
     
     # Import dimension
     global fatality
@@ -55,7 +49,7 @@ def getDim_Crash():
     fatality = fatality[[col for col in fatality.columns if col != 'Crash ID'] + ['Crash ID']]
     
     # Export
-    crash.to_csv("output/Dim_Crash.csv", index = False)
+    crash.to_csv("out/Dim_Crash.csv", index = False)
     
     # Status message
     crash.info()
@@ -64,7 +58,6 @@ def getDim_Crash():
 def getDim_Involvement():
     # Progress messages
     print("Executing for getDim_Involvement() ...")
-    print("Should remain 13/32584 rows")
     
     # Create dimension
     global fatality
@@ -91,7 +84,7 @@ def getDim_Involvement():
     involve = involve[['involve ID'] + [col for col in involve.columns if col != 'involve ID']]
     
     # Export
-    involve.to_csv("output/Dim_Involvement.csv", index = False)
+    involve.to_csv("out/Dim_Involvement.csv", index = False)
     
     # Status message
     involve.info()
@@ -100,7 +93,6 @@ def getDim_Involvement():
 def getDim_DateTime():
     # Progress messages
     print("Executing getDim_DateTime() ...")
-    print("Should remain 48473/56873 rows")
     
     # Create dimension
     global fatality
@@ -122,7 +114,7 @@ def getDim_DateTime():
     dateTime = dateTime[['Date ID'] + [col for col in dateTime.columns if col != 'Date ID']]
     
     # Export
-    dateTime.to_csv("output/Dim_DateTime.csv", index = False)
+    dateTime.to_csv("out/Dim_DateTime.csv", index = False)
     
     # Status message
     dateTime.info()
@@ -131,7 +123,6 @@ def getDim_DateTime():
 def getDim_Period():
     # Progress messages
     print("Executing getDim_Period() ...")
-    print("Should remain 2/892 rows")
     
     # Create dimension
     global fatality
@@ -168,7 +159,7 @@ def getDim_Period():
     period = period.drop_duplicates()
     
     # Export
-    period.to_csv("output/Dim_Period.csv", index = False)
+    period.to_csv("out/Dim_Period.csv", index = False)
     
     # Status message
     period.info()
@@ -181,22 +172,54 @@ def getDim_Location():
     # Crease dimension
     global fatality, replace_dict
     location = fatality[['National LGA Name 2021', 'State']].copy()
+    population = pd.read_excel(
+        "src/Population estimates by LGA, Significant Urban Area, Remoteness Area, Commonwealth Electoral Division and State Electoral Division, 2001 to 2023.xlsx",
+        sheet_name = "Table 1",
+        skiprows = 6,
+        usecols=['LGA code', 'Local Government Area']       # Ignore population data
+    )
     
     # Cleanse LGA Name
     location = location.dropna(subset=['National LGA Name 2021'])
     location = location.drop_duplicates()
     location['National LGA Name 2021'] = location['National LGA Name 2021'].replace(replace_dict)
+    
+    population = population.dropna(subset=['LGA code', 'Local Government Area'])
+    population = population.drop_duplicates()
+    population['Local Government Area'] = population['Local Government Area'].replace(replace_dict)
+    
+    # Reshape dimension properties
+    location = location.rename(columns={
+        'National LGA Name 2021': 'LGA Name',
+    })
+    population = population.rename(columns={
+        'LGA code': 'LGA Code',
+        'Local Government Area': 'LGA Name',
+    })
+    
+    # JOIN location and population dimensions
+    location = location.merge(population, on=['LGA Name'], how='left')
+    
+    # Reorder columns
+    location = location[['LGA Code', 'LGA Name', 'State']]
+    
+    # Export as Power BI identifiable file format
+    location.to_csv("out/Dim_Location.csv", index = False)
+    
+    # Status message
+    location.info()
+    print()
 
 def getDim_LGA():
     # Progress messages
     print("Executing for getDim_LGA() ...")
-    print("Should remain 565/564 rows")
     
     # Create dimension
     rawGeo = gpd.read_file("src/LGA_2021_AUST_GDA94.geojson")
     geo = rawGeo[['LGA_CODE21','LGA_NAME21','geometry']].copy()
     
     # Cleanse dimension
+    global replace_dict
     geo = geo.replace(['ZZZZZ'], pd.NA)     # Invalid LGA Code for "Outside Australia"
     geo = geo.dropna()
     geo = geo.drop_duplicates()
@@ -204,12 +227,12 @@ def getDim_LGA():
     # Reshape dimension properties
     geo = geo.rename(columns={
         'LGA_CODE21':'LGA Code',
-        'LGA_NAME21':'LGA Name',
+        'LGA_NAME21':'LGA Name',            # Placeholder, just for human readability
         'geometry':'LGA Geometry'           # Dtype geometry can be drill down to coordinates later
     })
     
     # Export as Power BI identifiable file format
-    geo.to_file("output/Dim_LGA.json", driver="GeoJSON")
+    geo.to_file("out/Dim_LGA.json", driver="GeoJSON")
     
     # Status message
     geo.info()
@@ -227,7 +250,7 @@ fatality = pd.read_excel(
 )
 
 # Import replace dict
-rawDict = pd.read_csv("replaceDict.csv")
+rawDict = pd.read_csv("dict/replaceDict.csv")
 replace_dict = dict(zip(rawDict['original'], rawDict['replacement']))
 
 # # Add primary key and pin to left
@@ -244,8 +267,8 @@ replace_dict = dict(zip(rawDict['original'], rawDict['replacement']))
 # crash = crash.replace(invalid, pd.NA)
 
 # Export dimension tables
-if not os.path.exists("output"):
-    os.makedirs("output")
+if not os.path.exists("out"):
+    os.makedirs("out")
 # getDim_Age()
 # getDim_Crash()
 # getDim_Involvement()
@@ -257,7 +280,7 @@ getDim_Location()
 # # Export fact table
 # print("Drop:" + str(toDrop))
 # fatality = fatality.drop(columns=toDrop)
-# fatality.to_csv("output/Fact_Fatality.csv", index = False)
+# fatality.to_csv("out/Fact_Fatality.csv", index = False)
 
 # Status message
 print("Cleansing complete\n")
