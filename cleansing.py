@@ -273,7 +273,7 @@ def getDim_LGA_Geometry():
     })
     
     # Export as Power BI identifiable file format
-    geo.to_file("out/Dim_LGA.json", driver="GeoJSON")
+    geo.to_file("out/Dim_LGA_Geometry.json", driver="GeoJSON")
     
     # Status message
     geo.info()
