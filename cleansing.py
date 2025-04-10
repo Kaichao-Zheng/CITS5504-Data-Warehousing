@@ -219,7 +219,7 @@ def getDim_Location():
     # Export as Power BI identifiable file format
     location.to_csv("out/Dim_Location.csv", index = False)
 
-def getDim_LGA():
+def getDim_LGA_Geometry():
     # Progress messages
     print("Executing for getDim_LGA() ...")
     
@@ -278,7 +278,7 @@ getDim_DateTime()
 getDim_Period()
 getDim_Dwelling()
 getDim_Location()
-getDim_LGA()
+getDim_LGA_Geometry()
 
 # Reshape fact properties
 print("Drop redundant properties in fact table ...")
