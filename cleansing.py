@@ -301,7 +301,7 @@ fatality = fatality.drop(columns=['Day of week'])
 toDrop = ['Time of day']
 
 # Void invalid cells
-invalid = [-9,'-9','Unknown','Undetermined']
+invalid = [-9,'-9','Unknown','Undetermined','Nambucca']
 fatality = fatality.replace(invalid, pd.NA)
 
 # Export dimension tables
