@@ -20,6 +20,10 @@ def getDim_Age():
     
     # Export
     age.to_csv("out/Dim_Age.csv", index = False)
+    
+    # Status message
+    age.info()
+    print()
 
 def getDim_Crash(): 
     # Progress messages
@@ -46,6 +50,10 @@ def getDim_Crash():
     
     # Export
     crash.to_csv("out/Dim_Crash.csv", index = False)
+    
+    # Status message
+    crash.info()
+    print()
 
 def getDim_Involvement():
     # Progress messages
@@ -78,6 +86,10 @@ def getDim_Involvement():
     # Export
     involve.to_csv("out/Dim_Involvement.csv", index = False)
     
+    # Status message
+    involve.info()
+    print()
+    
 def getDim_DateTime():
     # Progress messages
     print("Executing getDim_DateTime() ...")
@@ -103,6 +115,10 @@ def getDim_DateTime():
     
     # Export
     dateTime.to_csv("out/Dim_DateTime.csv", index = False)
+    
+    # Status message
+    dateTime.info()
+    print()
 
 def getDim_Period():
     # Progress messages
@@ -144,6 +160,10 @@ def getDim_Period():
     
     # Export
     period.to_csv("out/Dim_Period.csv", index = False)
+    
+    # Status message
+    period.info()
+    print()
 
 def getDim_Dwelling():
     # Progress messages
@@ -157,6 +177,7 @@ def getDim_Dwelling():
     )
     
     # Cleanse dimension
+    dwell = dwell[:-5]      # hardcoding row delete
     dwell = dwell.dropna()
     dwell = dwell.drop_duplicates()
     dwell['LGA (EN)'] = dwell['LGA (EN)'].replace(replace_dict)
@@ -169,6 +190,10 @@ def getDim_Dwelling():
     
     # Export
     dwell.to_csv("out/Dim_Dwelling.csv", index = False)
+    
+    # Status message
+    dwell.info()
+    print()
 
 def getDim_Location():
     # Progress messages
@@ -218,6 +243,10 @@ def getDim_Location():
     
     # Export as Power BI identifiable file format
     location.to_csv("out/Dim_Location.csv", index = False)
+    
+    # Status message
+    location.info()
+    print()
 
 def getDim_LGA_Geometry():
     # Progress messages
@@ -242,10 +271,14 @@ def getDim_LGA_Geometry():
     
     # Export as Power BI identifiable file format
     geo.to_file("out/Dim_LGA.json", driver="GeoJSON")
+    
+    # Status message
+    geo.info()
+    print()
 
 # main()
 # Import raw fact table
-print("Importing fatality data as fact table ...")
+print("Importing fatality data as fact table ...\n")
 fatality = pd.read_excel(
     "src/bitre_fatalities_dec2024.xlsx",
     sheet_name = "BITRE_Fatality",
