@@ -317,9 +317,13 @@ getDim_LGA_Geometry()
 print("Drop redundant properties in fact table ...")
 fatality = fatality.drop(columns=toDrop)
 fatality = fatality[['Fatality ID','Gender','Age','Road User','Crash ID','Involve ID','Date ID','Period Name','LGA Name','National Remoteness Areas','SA4 Name 2021']]
+print()
 
 # Export fact table
+print("Export fact table ...")
 fatality.to_csv("out/Fact_Fatality.csv", index = False)
+fatality.info()
+print()
 
 # Status message
 print("Cleansing complete!\n")
