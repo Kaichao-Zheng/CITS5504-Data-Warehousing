@@ -61,7 +61,9 @@ def getDim_Involvement():
     
     # Create dimension
     global fatality
+    
     involve = fatality[['Bus Involvement','Heavy Rigid Truck Involvement','Articulated Truck Involvement']].copy()
+    
     
     # Cleanse dimension
     involve = involve.dropna(how='all')
@@ -69,6 +71,7 @@ def getDim_Involvement():
     involve= involve.fillna('Unknown')
     # Add primary key
     involve['Involve ID'] = range(1, 1+len(involve))
+    involve['Involve ID'] = involve['Involve ID'].astype(object)
     
     # Reshape fact properties
     global toDrop
@@ -102,7 +105,7 @@ def getDim_DateTime():
     dateTime = dateTime.dropna(how='all')
     dateTime = dateTime.drop_duplicates()
     # Add primary key
-    dateTime['Date ID'] = range(1, 1+len(dateTime))
+    dateTime['DateTime ID'] = range(1, 1+len(dateTime))
     
     # Reshape fact properties
     global toDrop
@@ -111,7 +114,7 @@ def getDim_DateTime():
     
     # Reshape dimension properties
     dateTime = dateTime.rename(columns={'Dayweek':'Day of Week'})
-    dateTime = dateTime[['Date ID'] + [col for col in dateTime.columns if col != 'Date ID']]
+    dateTime = dateTime[['DateTime ID'] + [col for col in dateTime.columns if col != 'DateTime ID']]
     
     # Export
     dateTime.to_csv("out/Dim_DateTime.csv", index = False)
@@ -316,7 +319,7 @@ getDim_LGA_Geometry()
 # Reshape fact properties
 print("Drop redundant properties in fact table ...")
 fatality = fatality.drop(columns=toDrop)
-fatality = fatality[['Fatality ID','Gender','Age','Road User','Crash ID','Involve ID','Date ID','Period Name','LGA Name','National Remoteness Areas','SA4 Name 2021']]
+fatality = fatality[['Fatality ID','Gender','Age','Road User','Crash ID','Involve ID','DateTime ID','Period Name','LGA Name','National Remoteness Areas','SA4 Name 2021']]
 print()
 
 # Export fact table
