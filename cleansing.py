@@ -216,6 +216,7 @@ def getDim_Location():
     location = location.dropna(subset=['National LGA Name 2021'])
     location = location.drop_duplicates()
     location['National LGA Name 2021'] = location['National LGA Name 2021'].replace(replace_dict)
+    fatality['National LGA Name 2021'] = fatality['National LGA Name 2021'].replace(replace_dict)
     
     population = population.dropna(subset=['LGA code', 'Local Government Area'])
     population = population.drop_duplicates()
@@ -301,7 +302,8 @@ fatality = fatality.drop(columns=['Day of week'])
 toDrop = ['Time of day']
 
 # Void invalid cells
-invalid = [-9,'-9','Unknown','Undetermined','Nambucca']
+invalid = [-9,'-9','Unknown','Undetermined']
+invalid += ['Nambucca']         # Special unmatch cases
 fatality = fatality.replace(invalid, pd.NA)
 
 # Export dimension tables
