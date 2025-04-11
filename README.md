@@ -1,8 +1,10 @@
 # CITS4401 Data Warehouse Project 1
 
-**Presented by:**
+**⭐️ Give this project a Star**
 
-24141207	Kaichao Zheng
+If you found this project helpful in any way, please consider giving it a Star!
+
+Your support means a lot, especially for newcomers to programming. Thank you!
 
 ---
 
@@ -15,8 +17,6 @@ Use the following code to view the full project:
 ```bash
 git clone https://github.com/Kaichao-Zheng/CITS5504-Data-Warehousing.git
 ```
-
----
 
 ## Dimension Design
 
