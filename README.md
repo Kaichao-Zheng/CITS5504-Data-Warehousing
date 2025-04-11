@@ -4,7 +4,7 @@
 
 If you found this project helpful in any way, please consider giving it a Star!
 
-Your support means a lot, especially for newcomers to programming. Thank you!
+I'm just getting started with programming, and your support means a lot.
 
 ---
 
