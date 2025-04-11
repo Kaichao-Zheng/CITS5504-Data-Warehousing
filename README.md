@@ -1,4 +1,4 @@
-# CITS4401 Data Warehouse Project 1
+# CITS5504 Data Warehouse Project 1
 
 **⭐️ Give this project a Star**
 
