@@ -468,5 +468,165 @@ The process of queries involves creating <u>temporary measures</u>, shown as und
 
 ## Association Rule Mining
 
-### 1. aaa
+My steps are very similar to the one in the lab tutorial.
 
+### 1. Dataset
+
+I use the original `bitre_fatalities_dec2024.xlsx` file as my dataset.
+
+### 2. Data Cleansing
+
+* Drop invalid rows as `TransactionEncoder()` required.
+
+  ```python
+  # Cleanse invalid values
+  invalid = [-9,'-9','Unknown','Undetermined']
+  fatality = fatality.replace(invalid, pd.NA)
+  fatality = fatality.dropna()
+  ```
+
+  Concatenate property name into its values to enhance readability in final output.
+
+  ```python
+  # Concatenate "Speed Limit: " before speed limit value
+  fatality['Speed Limit'] = fatality['Speed Limit'].apply(lambda x: f"Speed Limit: {x}")
+  
+  # Cleanse boolean value
+  fatality['Bus Involvement'] = fatality['Bus Involvement'].replace(
+      {'Yes': 'Bus', 'No': 'Not Bus'}
+  )
+  fatality['Heavy Rigid Truck Involvement'] = fatality['Heavy Rigid Truck Involvement'].replace(
+      {'Yes': 'Heavy Rigid Truck', 'No': 'Not Heavy Rigid Truck'}
+  )
+  fatality['Articulated Truck Involvement'] = fatality['Articulated Truck Involvement'].replace(
+      {'Yes': 'Articulated Truck', 'No': 'Not Articulated Truck'}
+  )
+  fatality['Christmas Period'] = fatality['Christmas Period'].replace(
+      {'Yes': 'Is Christmas', 'No': 'Not Christmas'}
+  )
+  fatality['Easter Period'] = fatality['Easter Period'].replace(
+      {'Yes': 'Is Easter', 'No': 'Not Easter'}
+  )
+  ```
+
+### 3. Mining Algorithms
+
+Using the `apriori()` algorithm, just like what was taught in the lab.
+
+* `min_support` can be any value that less than 0.3, which will be a filter of `support` later.
+
+```python
+frequent_itemsets = apriori(arm_df, min_support=0.2, use_colnames=True)
+```
+
+### 4. Filter Association Rules
+
+- `support`: The median 0.3 of typical thresholds range from 0.1 to 0.5.
+- `confidence`: 0.5 is a common starting point as a rule of thumb.
+- `lift`: Keep any rules which have positive correlation.
+
+```python
+# Filter with support > 0.3
+frequent_itemsets[frequent_itemsets['support'] > 0.3]
+# Filter with condifence > 0.5
+rules_con = association_rules(frequent_itemsets, metric="confidence",min_threshold=0.5)
+rules_con = rules_con.dropna()      # Cleanse "certainty_denom == 0"
+# Filter with lift > 1
+rules_lift = association_rules(frequent_itemsets, metric="lift",min_threshold=1)
+rules_lift = rules_lift.dropna()    # Cleanse "certainty_denom == 0"
+```
+
+### 5. Formatted Output
+
+```python
+result_arm = rules_con[['antecedents','consequents','support','lift','confidence']]
+```
+
+There are specified requirements for output:
+
+> Explain the top k rules (where k ≥ 1) that have "Road User" on the right-hand side, ranked by lift and confidence.
+
+#### Filter `consequents` contains `Road User`
+
+```python
+road_user = ['Driver','Passenger','Motorcycle rider','Motorcycle pillion passenger','Pedal cyclist','Pedestrian']
+filtered_result = result_arm[result_arm['consequents'].apply(lambda x: any(user in x for user in road_user))]
+```
+
+#### Rank by `lift` and `confidence`
+
+```python
+ranked_result = filtered_result.sort_values(by=['lift', 'confidence'], ascending=False)
+```
+
+### 6. Output Explanation
+
+```bash
+                                            antecedents           consequents   support      lift  confidence
+7544  (Not Easter, Not Christmas, Male, Not Bus, We...)              (Driver)  0.212601  1.093249    0.514142
+7555            (Male, Weekday, Not Bus, Not Christmas)  (Driver, Not Easter)  0.212601  1.091331    0.506859
+3975               (Male, Weekday, Not Bus, Not Easter)              (Driver)  0.219958  1.090774    0.512978
+...
+```
+
+#### Rule 7544
+
+- **Antecedents:** (Not Easter, Not Christmas, Male, Not Bus, We…)
+- **Consequents:** (<u>Driver</u>)
+- **Support:** 0.212601
+  - About 21.26% of the records satisfy the `Antecedents`.
+- **Lift:** 1.093249
+  - The probability of "Driver"  in given the `Antecedents` is merely higher than the random probability.
+- **Confidence:** 0.514142
+  - Among the records satisfying the  `Antecedents`, about 51.41% are "Driver."
+
+#### Rule 7555
+
+- **Antecedents:** (Male, Weekday, Not Bus, Not Christmas)
+- **Consequents:** (<u>Driver</u>, Not Easter)
+- **Support:** 0.212601
+  - About 21.26% of the records satisfy the `Antecedents`.
+- **Lift:** 1.091331
+  - The probability of "Driver and Not Easter" given the `Antecedents` is slightly higher than the random probability.
+- **Confidence:** 0.506859
+  - Among the records satisfying the `Antecedents`, about 50.69% are "Driver and Not Easter."
+
+#### Rule 3975
+
+- **Antecedents:** (Male, Weekday, Not Bus, Not Easter)
+- **Consequents:** (<u>Driver</u>)
+- **Support:** 0.219958
+  - About 21.99% of the records satisfy the `Antecedents`.
+- **Lift:** 1.090774
+  - The probability of "Driver" given the `Antecedents` is slightly higher than the random probability.
+- **Confidence:** 0.512978
+  - Among the records satisfying the `Antecedents`, about 51.30% are "Driver."
+
+## Recommendations
+
+### 1. Targeting Safety Campaigns During Holiday Seasons
+
+Holiday seasons may see more drivers on the road that road safety might be more of a concern.
+
+```bash
+                                            antecedents           consequents   support      lift  confidence
+7544  (Not Easter, Not Christmas, Male, Not Bus, We...)              (Driver)  0.212601  1.093249    0.514142
+```
+
+### 2. Encourage Increased Awareness During Weekdays
+
+Weekdays may be busier times with more road users, especially male drivers.
+
+```bash
+                                            antecedents           consequents   support      lift  confidence
+249                                     (Weekday, Male)              (Driver)  0.225335  1.082895    0.509273
+```
+
+### 3. Promote Public Transportation Options
+
+Male fatalities who are not involved bus in weekday, may have a higher likelihood of driving.
+
+```bash
+                                            antecedents           consequents   support      lift  confidence
+1302                           (Weekday, Not Bus, Male)              (Driver)  0.222222  1.086936    0.511174
+```
