@@ -69,6 +69,7 @@ CREATE TABLE Fact_Fatality (
     "LGA Name"				VARCHAR(50),
     "National Remoteness Areas" VARCHAR(30),
     "SA4 Name 2021"			VARCHAR(50),
+    "count"                 INTEGER,
     FOREIGN KEY ("Age") REFERENCES Dim_Age("Age"),
     FOREIGN KEY ("Crash ID") REFERENCES Dim_Crash("Crash ID"),
     FOREIGN KEY ("Involve ID") REFERENCES Dim_Involvement("Involve ID"),

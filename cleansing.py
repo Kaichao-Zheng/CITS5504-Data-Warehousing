@@ -297,6 +297,9 @@ replace_dict = dict(zip(rawDict['original'], rawDict['replacement']))
 fatality['Fatality ID'] = range(1, 1+len(fatality))
 fatality = fatality[['Fatality ID'] + [col for col in fatality.columns if col != 'Fatality ID']]
 
+# Add grain_count measure
+fatality['count'] = 1
+
 # Mark redundant columns
 fatality = fatality.drop(columns=['Day of week'])
 toDrop = ['Time of day']
@@ -321,7 +324,7 @@ getDim_LGA_Geometry()
 # Reshape fact properties
 print("Drop redundant properties in fact table ...")
 fatality = fatality.drop(columns=toDrop)
-fatality = fatality[['Fatality ID','Gender','Age','Road User','Crash ID','Involve ID','DateTime ID','Period Name','LGA Name','National Remoteness Areas','SA4 Name 2021']]
+fatality = fatality[['Fatality ID','Gender','Age','Road User','Crash ID','Involve ID','DateTime ID','Period Name','LGA Name','National Remoteness Areas','SA4 Name 2021','count']]
 print()
 
 # Export fact table
